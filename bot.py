@@ -2,6 +2,7 @@ import os
 import discord
 from discord.ext import tasks, commands
 import datetime
+import pytz
 
 # Token via variável de ambiente
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -11,15 +12,15 @@ intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 def eh_dia_de_daily():
-    hoje = datetime.datetime.now().weekday()
+    hoje = datetime.datetime.now(pytz.timezone("America/Sao_Paulo")).weekday()
     # segunda=0, terça=1, quarta=2, quinta=3, sexta=4
     return hoje in [1, 2, 4]  # terça, quarta e sexta
 
 @tasks.loop(minutes=1)
 async def daily_task():
-    agora = datetime.datetime.now().strftime("%H:%M")
-    # Ajuste o horário que você quer (ex: 09:00 = 9h da manhã)
-    if agora == "09:00" and eh_dia_de_daily():
+    tz = pytz.timezone("America/Sao_Paulo")
+    agora = datetime.datetime.now(tz).strftime("%H:%M")
+    if agora == "21:00" and eh_dia_de_daily():
         canal = bot.get_channel(CANAL_ID)
         if canal:
             await canal.send(
@@ -31,7 +32,7 @@ async def daily_task():
 
 @bot.event
 async def on_ready():
-    print(f"Bot conectado como {bot.user}")
+    print(f"✅ Bot conectado como {bot.user}")
     daily_task.start()
 
 bot.run(TOKEN)
